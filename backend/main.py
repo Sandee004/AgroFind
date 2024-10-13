@@ -1,18 +1,36 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
 import logging
+from flask_cors import CORS
+import mimetypes
 
 load_dotenv()
 
-app = Flask(__name__, static_folder="static")
+mimetypes.add_type('application/javascript', '.js')
+mimetypes.add_type('text/css', '.css')
+app = Flask(__name__, static_folder='dist', static_url_path='', template_folder='dist')
 logging.basicConfig(level=logging.DEBUG)
 genai.configure(api_key=os.getenv("API_KEY"))
+#CORS(app, origins=["http://localhost:3000", "http://localhost:5173"])
+CORS(app, resources={r"/analyze": {"origins": "http://localhost:5173"}})
 
-@app.route("/")
-def home():
-    return render_template("home.html")
+@app.route('/')
+def serve_index():
+    return render_template('index.html')
+
+
+@app.route('/assets/<path:path>')
+def serve_assets(path):
+    return send_from_directory(os.path.join(app.static_folder, 'assets'), path)
+
+# Serve other static files
+@app.route('/<path:path>')
+def serve_static(path):
+    if os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    return render_template('index.html')
 
 
 @app.route("/analyze", methods=["POST"])
