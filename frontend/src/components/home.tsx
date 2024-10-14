@@ -106,7 +106,8 @@ const Home = () => {
         const formData = new FormData();
         formData.append("image", fileInput.files[0]);
 
-        const response = await fetch("http://localhost:5000/analyze", {
+        //const response = await fetch("http://localhost:5000/analyze", {
+        const response = await fetch("https://agrofind.onrender.com/analyze", {
           method: "POST",
           body: formData,
         });
@@ -114,7 +115,6 @@ const Home = () => {
         const data = await response.json();
 
         if (!response.ok) {
-          // Handle specific error for unsupported file type
           if (response.status === 400 && data.error) {
             throw new Error(data.error);
           }
